@@ -17,9 +17,9 @@ const createRefreshToken = (user) => {
 }
 
 const register = async (req, res) => {
-    const { name, email, password, description } = req.body
+    const { name, email, password } = req.body
     try {
-        if ([username, email, password].some(field => !field || field.trim() === "")) {
+        if ([name, email, password].some(field => !field || field.trim() === "")) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -33,7 +33,6 @@ const register = async (req, res) => {
         const user = await User.create({
             name,
             email,
-            description,
             password: hashedPassword
         });
 
@@ -109,4 +108,42 @@ const login = async (req, res) => {
     }
 }
 
-export { register, login}
+const logout = async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user.id, { refreshToken: null });
+
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+
+    return res.json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+
+const refreshToken = async (req,res) => {
+    const token = req.cookie.refreshToken
+    if(!token) return res.json({message:"No refresh token"})
+    try {
+        const decode = jwt.verify(token, process.env.JWt_SECRET)
+        const user = await User.findById({id:decode.id})
+        if (!user || user.refreshToken !== token) {
+            return res.status(403).json({ message: "Invalid refresh token" });
+        }
+        const newAccessToken = createAccessToken(user)
+        res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000
+    });
+
+    res.json({ success: true });
+    } catch (error) {
+        res.json({message:"Token Expired"})
+    }
+}
+
+export { register, login, logout, refreshToken}

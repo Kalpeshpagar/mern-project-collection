@@ -8,6 +8,7 @@
 import express from "express"
 import cookieParser from "cookie-parser"
 import authRouter from "./routes/auth.routes.js";
+import taskRouter from "./routes/task.routes.js";
 const app = express();
 
 // middlewares
@@ -17,7 +18,8 @@ app.use(cookieParser())
 
 
 // routes
-app.use('/api/v1', authRouter)
+app.use('/api/v1/users', authRouter)
+app.use('/api/v1/tasks', taskRouter)
 
 // Health checker
 app.get('/', (req, res) => {
