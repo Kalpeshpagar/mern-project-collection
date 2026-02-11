@@ -18,96 +18,119 @@ const createRefreshToken = (user) => {
 
 const register = async (req, res) => {
     const { name, email, password } = req.body
+
     try {
-        if ([name, email, password].some(field => !field || field.trim() === "")) {
-            return res.status(400).json({ message: "All fields are required" });
+        // Check if user already exists
+        const existedUser = await User.findOne({ email })
+
+        if (existedUser) {
+            return res.status(400).json({
+                success: false,
+                message: "User already exists"
+            })
         }
 
-
-        const existedUser = await User.findOne({ email })
-        if (existedUser) return res.json({ success: false, message: "User already exists" })
-
-        // hashed password
+        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10)
 
+        // Create user
         const user = await User.create({
             name,
             email,
             password: hashedPassword
-        });
+        })
 
-        const accessToken = createAccessToken(user);
-        const refreshToken = createRefreshToken(user);
+        const accessToken = createAccessToken(user)
+        const refreshToken = createRefreshToken(user)
 
         user.refreshToken = refreshToken
         await user.save()
 
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
-            secure: true,
+            secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
             maxAge: 24 * 60 * 60 * 1000
         })
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: true,
+            secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
-        res.status(201).json({ success: true })
+        res.status(201).json({
+            success: true,
+            message: "User registered successfully"
+        })
 
     } catch (error) {
-        console.error(error);
+        console.error(error)
         res.status(500).json({
             success: false,
             message: error.message
         })
     }
 }
+
 
 const login = async (req, res) => {
-    const { email, password } = req.body
-    try {
-        if (!email || !password) return res.status(400).json({ message: "All fields are required" })
-        
-        const user = await User.findOne({ email })
-        if (!user) return res.status(400).json({ message: "Invalid credentials" })
-                  
-        const match = await bcrypt.compare(password, user.password)
-        if (!match) return res.status(400).json({ message: "Invalid credentials" })
-            
-        
-        const accessToken = createAccessToken(user);
-          const refreshToken = createRefreshToken(user);
-        
-          user.refreshToken = refreshToken;
-          await user.save();
-        
-          res.cookie("accessToken", accessToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "strict",
-            maxAge: 24 * 60 * 60 * 1000
-          });
-        
-          res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000
-          });
-        
-          res.json({ success: true });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            success: false,
-            message: error.message
-        })
+  const { email, password } = req.body
+
+  try {
+    const user = await User.findOne({ email })
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials"
+      })
     }
+
+    const match = await bcrypt.compare(password, user.password)
+
+    if (!match) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials"
+      })
+    }
+
+    const accessToken = createAccessToken(user)
+    const refreshToken = createRefreshToken(user)
+
+    user.refreshToken = refreshToken
+    await user.save()
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000
+    })
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    })
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful"
+    })
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
 }
+
 
 const logout = async (req, res) => {
   try {
