@@ -88,7 +88,7 @@ const login = async (req, res) => {
             httpOnly: true,
             secure: true,
             sameSite: "strict",
-            maxAge: 15 * 60 * 1000
+            maxAge: 24 * 60 * 60 * 1000
           });
         
           res.cookie("refreshToken", refreshToken, {
@@ -124,11 +124,11 @@ const logout = async (req, res) => {
 
 
 const refreshToken = async (req,res) => {
-    const token = req.cookie.refreshToken
+    const token = req.cookies.refreshToken
     if(!token) return res.json({message:"No refresh token"})
     try {
-        const decode = jwt.verify(token, process.env.JWt_SECRET)
-        const user = await User.findById({id:decode.id})
+        const decode = jwt.verify(token, process.env.JWT_REFRESH_SECRET)
+        const user = await User.findById(decode.id)
         if (!user || user.refreshToken !== token) {
             return res.status(403).json({ message: "Invalid refresh token" });
         }

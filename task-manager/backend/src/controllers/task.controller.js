@@ -17,7 +17,7 @@ const createTask = async (req, res) => {
       title: title.trim(),
       description: description.trim(),
       user: req.user.id  
-    }).populate('user', 'name email'); 
+    })
 
     return res.status(201).json({
       success: true,
@@ -36,10 +36,10 @@ const createTask = async (req, res) => {
 const getAllTasks = async (req, res) => {
   try {
       const tasks = await Task.find({ user: req.user.id })
-          .populate('user', 'name email');  
+           
 
     if (!tasks || tasks.length === 0) {
-      return res.status(404).json({ success: false, message: "No tasks found for this user" });
+      return res.status(200).json({ success: true, tasks: [] })
     }
 
     return res.status(200).json({ success: true, tasks });

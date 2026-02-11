@@ -9,9 +9,16 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import authRouter from "./routes/auth.routes.js";
 import taskRouter from "./routes/task.routes.js";
+import cors from "cors"
+
 const app = express();
 
 // middlewares
+app.use(cors({
+    origin: true,
+    credentials: true
+}))
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
@@ -27,4 +34,4 @@ app.get('/', (req, res) => {
 })
 
 
-export {app}
+export { app }
