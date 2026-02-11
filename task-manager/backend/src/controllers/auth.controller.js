@@ -70,13 +70,14 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     const { email, password } = req.body
     try {
-        if (!email || !password) return res.json({ success: false, message: "All fields are required" })
+        if (!email || !password) return res.status(400).json({ message: "All fields are required" })
         
         const user = await User.findOne({ email })
-        if (!user) return res.status(400).json({ success: false, message: "Invalid email" })
-        
+        if (!user) return res.status(400).json({ message: "Invalid credentials" })
+                  
         const match = await bcrypt.compare(password, user.password)
-        if (!match) return res.status(400).json({ success: false, message: "Invalid password" })
+        if (!match) return res.status(400).json({ message: "Invalid credentials" })
+            
         
         const accessToken = createAccessToken(user);
           const refreshToken = createRefreshToken(user);
