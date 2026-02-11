@@ -1,0 +1,121 @@
+.dashboard {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.dashboard h2 {
+  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.task-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.task-form input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.task-form input:focus {
+  border-color: #6366f1;
+}
+
+.task-form button {
+  padding: 10px 18px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.task-form button:hover {
+  background: #4f46e5;
+}
+
+.task-card {
+  background: white;
+  padding: 18px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  margin-bottom: 15px;
+  transition: 0.2s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+}
+
+.task-card.completed {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.task-card h4 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.task-card p {
+  margin: 8px 0;
+  color: #555;
+}
+
+.task-actions {
+  margin-top: 10px;
+}
+
+.task-actions button {
+  margin-right: 8px;
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.task-actions button:hover {
+  opacity: 0.85;
+}
+
+.task-actions .danger {
+  background: #ef4444;
+  color: white;
+}
+
+.task-actions button:not(.danger) {
+  background: #e5e7eb;
+}
+
+.filter-buttons {
+  margin-bottom: 20px;
+}
+
+.filter-buttons button {
+  margin-right: 10px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #e5e7eb;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.filter-buttons button.active {
+  background: #6366f1;
+  color: white;
+}
+
+.filter-buttons button:hover {
+  opacity: 0.9;
+}
