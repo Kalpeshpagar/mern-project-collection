@@ -33,24 +33,61 @@ const createTask = async (req, res) => {
   }
 };
 
-const getAllTasks = async (req, res) => {
-  try {
-      const tasks = await Task.find({ user: req.user.id })
+// const getAllTasks = async (req, res) => {
+//   try {
+//       const tasks = await Task.find({ user: req.user.id })
            
 
-    if (!tasks || tasks.length === 0) {
-      return res.status(200).json({ success: true, tasks: [] })
+//     if (!tasks || tasks.length === 0) {
+//       return res.status(200).json({ success: true, tasks: [] })
+//     }
+
+//     return res.status(200).json({ success: true, tasks });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: "Server error",
+//       error: error.message
+//     });
+//   }
+// };
+
+const getAllTasks = async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 1
+    const limit = Number(req.query.limit) || 5
+    const search = req.query.search || ""
+
+    const skip = (page - 1) * limit
+
+    // Search condition
+    const query = {
+      user: req.user.id,
+      title: { $regex: search, $options: "i" }
     }
 
-    return res.status(200).json({ success: true, tasks });
+    const totalTasks = await Task.countDocuments(query)
+
+    const tasks = await Task.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+
+    return res.status(200).json({
+      success: true,
+      tasks,
+      page,
+      totalPages: Math.ceil(totalTasks / limit),
+      totalTasks
+    })
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Server error",
-      error: error.message
-    });
+      message: error.message
+    })
   }
-};
+}
+
 
 const updateTask = async (req, res) => {
     try {

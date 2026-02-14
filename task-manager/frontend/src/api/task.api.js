@@ -1,7 +1,9 @@
 import API from "./backendApi";
 
-export const getAllTasks = () =>
-  API.get('/tasks/get-tasks')
+export const getAllTasks = ({ page = 1, limit = 5, search = "" } = {}) =>
+  API.get(
+    `/tasks/get-tasks?page=${page}&limit=${limit}&search=${search}`
+  )
 
 export const createTask = (data) =>
   API.post('/tasks/create-task', data)
