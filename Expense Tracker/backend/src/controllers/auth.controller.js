@@ -41,13 +41,13 @@ const register = async (req, res) => {
 
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: process.env.NODE_ENV === "development",
             sameSite: "strict",
             maxAge: 24 * 60 * 60 * 1000,
         })
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: process.env.NODE_ENV === "development",
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         })
@@ -95,13 +95,13 @@ const login = async (req, res) => {
 
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: process.env.NODE_ENV === "development",
             sameSite: "strict",
             maxAge: 24 * 60 * 60 * 1000,
         })
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            ssecure: process.env.NODE_ENV === "production",
+            ssecure: process.env.NODE_ENV === "development",
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         })
@@ -150,7 +150,7 @@ const refreshToken = async (req, res) => {
 
         res.cookie("accessToken", newAccessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: process.env.NODE_ENV === "development",
             sameSite: "strict",
             maxAge: 24 * 60 * 60 * 1000
         })
