@@ -3,6 +3,18 @@ import Expense from "../models/expense.model.js";
 import Category from "../models/category.model.js";
 import User from "../models/user.model.js"
 
+const normalizeExpense = (expense) => {
+  const obj = expense.toObject();
+  return {
+    ...obj,
+    amount: Number(obj.amount.toString())
+  };
+};
+
+const normalizeExpenseArray = (expenses = []) =>
+  expenses.map(normalizeExpense);
+
+
 const createExpense = async (req, res) => {
   try {
     const { amount, category, expenseDate, note } = req.body;
@@ -47,42 +59,51 @@ const createExpense = async (req, res) => {
 
 const getExpenses = async (req, res) => {
   try {
-    // Read query params with defaults
     const page = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit) || 10, 100);
-
     const skip = (page - 1) * limit;
 
-    // Fetch expenses (user-scoped)
-    const expenses = await Expense.find({ user: req.user._id })
+    const { search, category, startDate, endDate } = req.query;
+
+    const query = { user: req.user._id };
+
+    // Search (note)
+    if (search) {
+      query.note = { $regex: search, $options: "i" };
+    }
+
+    // Category filter
+    if (category) {
+      query.category = category;
+    }
+
+    // Date range
+    if (startDate || endDate) {
+      query.expenseDate = {};
+      if (startDate) query.expenseDate.$gte = new Date(startDate);
+      if (endDate) query.expenseDate.$lte = new Date(endDate);
+    }
+
+    const expenses = await Expense.find(query)
       .populate("category", "name")
       .sort({ expenseDate: -1 })
       .skip(skip)
       .limit(limit);
 
-    // Total count (for frontend pagination UI)
-    const totalExpenses = await Expense.countDocuments({
-      user: req.user._id
-    });
-
-    // Pagination meta
-    const totalPages = Math.ceil(totalExpenses / limit);
+    const total = await Expense.countDocuments(query);
 
     return res.status(200).json({
-      success: true,
-      message: "Expenses fetched successfully",
-      data: expenses,
-      pagination: {
-        totalItems: totalExpenses,
-        totalPages,
-        currentPage: page,
-        limit
-      }
-    });
+  success: true,
+  data: normalizeExpenseArray(expenses),
+  pagination: {
+    totalItems: total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
+    limit
+  }
+});
 
   } catch (error) {
-    console.error("Fetch expenses error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Failed to fetch expenses"
@@ -109,7 +130,7 @@ const getExpenseById = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: expense
+      data: normalizeExpense(expense)
     });
 
   } catch (error) {
@@ -291,7 +312,6 @@ const getMonthlyExpenseSummary = async (req, res) => {
   }
 };
 
-
 const getDashboardData = async (req, res) => {
   try {
     const month = parseInt(req.query.month);
@@ -401,15 +421,37 @@ const getDashboardData = async (req, res) => {
     ]);
 
     return res.status(200).json({
-      success: true,
-      data: {
-        totalMonthExpense: monthlyTotal[0]?.total?.toString() || "0",
-        todayExpense: todayTotal[0]?.total?.toString() || "0",
-        topCategories,
-        recentExpenses,
-        monthlyTrend
-      }
-    });
+  success: true,
+  data: {
+    totalMonthExpense:
+      monthlyTotal.length > 0
+        ? Number(monthlyTotal[0].total.toString())
+        : 0,
+
+    todayExpense:
+      todayTotal.length > 0
+        ? Number(todayTotal[0].total.toString())
+        : 0,
+
+    topCategories: Array.isArray(topCategories)
+      ? topCategories.map((c) => ({
+          ...c,
+          total: Number(c.total.toString())
+        }))
+      : [],
+
+    recentExpenses: normalizeExpenseArray(recentExpenses),
+
+    monthlyTrend: Array.isArray(monthlyTrend)
+      ? monthlyTrend.map((d) => ({
+          day: d._id,
+          total: Number(d.total.toString())
+        }))
+      : []
+  }
+});
+
+
 
   } catch (error) {
     console.error("Dashboard error:", error);

@@ -1,5 +1,5 @@
 import Category from "../models/category.model.js";
-
+import Expense from "../models/expense.model.js"
 const createCategory = async (req, res) => {
   try {
     const { name } = req.body;
