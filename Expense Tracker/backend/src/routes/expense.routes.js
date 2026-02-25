@@ -25,6 +25,9 @@ router.use(verifyJWT);
 // create expense
 router.post("/", validate(createExpenseSchema), createExpense);
 
+// dashboard data
+router.get("/dashboard", getDashboardData);
+
 // get expenses (pagination)
 router.get("/", getExpenses);
 
@@ -40,8 +43,6 @@ router.delete("/:id", deleteExpense);
 // monthly summary
 router.get("/summary/monthly", getMonthlyExpenseSummary);
 
-// dashboard data
-router.get("/dashboard", getDashboardData);
 
 export default router;
 

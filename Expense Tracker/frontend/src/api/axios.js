@@ -6,36 +6,28 @@ const api = axios.create({
   withCredentials: true
 });
 
-// Flag to prevent infinite loops
 let isRefreshing = false;
 let failedQueue = [];
 
-// helper to resolve queued requests
 const processQueue = (error = null) => {
-  failedQueue.forEach(promise => {
-    if (error) {
-      promise.reject(error);
-    } else {
-      promise.resolve();
-    }
+  failedQueue.forEach(p => {
+    error ? p.reject(error) : p.resolve();
   });
   failedQueue = [];
 };
 
-// RESPONSE INTERCEPTOR
 api.interceptors.response.use(
-  response => response,
-  async error => {
+  (response) => response,
+  async (error) => {
     const originalRequest = error.config;
 
-    // If unauthorized & not retried yet
     if (
-      error.response?.status === 401 &&
-      !originalRequest._retry
-    ) {
+  error.response?.status === 401 &&
+  !originalRequest._retry &&
+  !originalRequest.url.includes("/refresh-token")
+) {
       originalRequest._retry = true;
 
-      // If refresh already in progress → queue request
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -45,23 +37,17 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Call refresh token API
         await refreshToken();
-
-        // Retry all queued requests
         processQueue();
-
         return api(originalRequest);
-
-      } catch (refreshError) {
-        processQueue(refreshError);
-        return Promise.reject(refreshError);
+      } catch (err) {
+        processQueue(err);
+        return Promise.reject(err);
       } finally {
         isRefreshing = false;
       }
     }
 
-    //  Other errors
     return Promise.reject(error);
   }
 );
