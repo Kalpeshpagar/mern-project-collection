@@ -1,0 +1,17 @@
+@import "./styles/theme.css";
+
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+
+.card,
+.chart-card,
+.modal,
+.section {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
