@@ -1,0 +1,116 @@
+.categories-page {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 24px;
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.categories-page h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* CREATE CATEGORY */
+.category-create {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.category-create input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.category-create input::placeholder {
+  color: var(--muted);
+}
+
+.category-create button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.category-create button:hover {
+  opacity: 0.9;
+}
+
+/* CATEGORY LIST */
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.category-item:last-child {
+  border-bottom: none;
+}
+
+.category-name {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ACTION BUTTONS */
+.category-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.category-actions button {
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.category-actions button:hover {
+  background: var(--border);
+}
+
+/* DELETE */
+.category-actions .danger {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.category-actions .danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* STATES */
+.loading {
+  text-align: center;
+  color: var(--muted);
+  padding: 20px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 20px;
+  font-size: 14px;
+}
