@@ -21,7 +21,7 @@ const Categories = () => {
     setCategories(list);
     setHasCategories(list.length > 0); 
   } catch {
-    toast.error("Failed to load categories");
+    
   } finally {
     setLoading(false);
   }
