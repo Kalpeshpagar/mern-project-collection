@@ -11,7 +11,9 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique:true,
+        unique: true,
+        lowercase: true,   
+        trim: true,        
     },
     password: {
         type: String,
@@ -23,43 +25,43 @@ const userSchema = new mongoose.Schema({
         default: 'member',
     },
     phone: {
-        type:String,
+        type: String,
     },
     address: {
-        type:String,
+        type: String,
     },
     avatar: {
-        type:String,
+        type: String,
     },
     isActive: {
         type: Boolean,
-        default:true,
+        default: true,
     },
     membershipId: {
-        type:String
+        type: String
     },
     borrowLimit: {
         type: Number,
-        default:3
+        default: 3
     },
     refreshToken: {
-            type: String
+        type: String
     }
-    
+
 }, { timestamps: true })
 
 
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next()
-    
+
     this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 
-userSchema.method.isPasswordCorrect = async function (password) {
+
+userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password)
 }
 
-userSchema.method
 
-export const User = mongoose.model(userSchema, 'User')
+export const User = mongoose.model('User', userSchema)
