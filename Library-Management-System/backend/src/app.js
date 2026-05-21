@@ -1,16 +1,24 @@
-import express from "express";       
+import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
 const app = express();
 
-app.use(cors({
+app.use(
+  cors({
     origin: process.env.CORS_ORIGIN,
-    credentials: true
-}));
+    credentials: true,
+  })
+);
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));  
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// import routes
+import authRoute from "./routes/auth.routes.js";
+
+// moute routes
+app.use("/api/auth", authRoute);
 
 export default app;
