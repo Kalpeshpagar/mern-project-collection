@@ -19,6 +19,6 @@ app.use(cookieParser());
 import authRoute from "./routes/auth.routes.js";
 
 // moute routes
-app.use("/api/auth", authRoute);
+app.use("/api/v1/auth", authRoute);
 
 export default app;
