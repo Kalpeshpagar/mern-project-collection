@@ -1,7 +1,7 @@
 import express from 'express'
 import { verifyJWT } from '../middlewares/auth.middleware.js'
 import { verifyRole } from '../middlewares/role.middleware.js'
-import { loginUser, logoutUser, refreshAccessToken, registerUser } from '../controllers/auth.controller.js'
+import { changePassword, getCurrentUser, loginUser, logoutUser, refreshAccessToken, registerUser, updateProfile } from '../controllers/auth.controller.js'
 
 const authRoute = express.Router()
 
@@ -37,5 +37,27 @@ authRoute.post('/logout', verifyJWT, logoutUser)
 
 authRoute.post('/refresh-token', refreshAccessToken)
 
+/**
+ *  @description : Get current user profile
+ *  @requires : valid user
+ *  @access : private
+ */
+
+authRoute.get('/me', verifyJWT, getCurrentUser)
+
+/**
+ *  @description : Update current user profile
+ *  @access : private
+ */
+
+authRoute.put('/me', verifyJWT, updateProfile)
+
+/**
+ *  @description : Change current user password
+ *  @requires : Valid user password required
+ *  @access : private
+ */
+
+authRoute.put('/change-password',  verifyJWT, changePassword);
 
 export default authRoute

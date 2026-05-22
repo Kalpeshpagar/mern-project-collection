@@ -16,7 +16,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
   }
 };
 
-// register
+// POST /auth/register -- User Register Controller 
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -39,8 +39,6 @@ const registerUser = asyncHandler(async (req, res) => {
   const avatarLocalPath = req.files?.avatar?.[0]?.path;
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
-
-  // remains to add and generate refresh, access token
 
   const user = await User.create({
     name,
@@ -71,12 +69,14 @@ const registerUser = asyncHandler(async (req, res) => {
     .cookie("refreshToken", refreshToken, options)
     .json({
       success: true,
+      message: "User registered successfully",
       accessToken,
       refreshToken,
-      message: "User registered successfully",
       data: createdUser,
     });
 });
+
+// POST /auth/login -- User Login Controller
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -109,13 +109,39 @@ const loginUser = asyncHandler(async (req, res) => {
     .cookie("refreshToken", refreshToken, options)
     .json({
       success: true,
-      user: loggedInUser,
+      message: "Logged in successfully",
+      data: loggedInUser,
       accessToken,
       refreshToken,
-      message: "Logged in successfully",
     });
 });
 
+// GET /auth/me -- just return the logged-in user
+const getCurrentUser = asyncHandler(async (req, res) => {
+    return res.status(200).json({
+        success: true,
+        data: req.user   
+    });
+});
+
+// GET /auth/me -- Update allowed fields only
+const updateProfile = asyncHandler(async (req, res) => {
+    const { name, phone, address } = req.body;  // never let user update role/email here
+
+    const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        { $set: { name, phone, address } },
+        { new: true, runValidators: true }
+    ).select("-password -refreshToken");
+
+    return res.status(200).json({
+        success: true,
+        message: "Profile updated successfully",
+        data: updatedUser
+    });
+});
+
+// POST /auth/logout -- Logout User Controller
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
@@ -130,6 +156,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json({ success: true, message: "User logged out" });
 });
 
+// POST /auth/refresh-token -- Get new refresh token controller
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
@@ -156,9 +183,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", newRefreshToken, options)
         .json({
+          message: "Access token refreshed",
           accessToken,
           refreshToken: newRefreshToken,
-          message: "Access token refreshed",
         });
     }
   } catch (error) {
@@ -168,4 +195,43 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+// PUT /auth/change-password -- Change current user password
+const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message:"Current password and new password are required"
+    })
+  }
+
+  const user = await User.findById(req.user._id);
+
+  const isMatch = await user.isPasswordCorrect(currentPassword)
+  if (!isMatch) {
+     return res.status(401).json({
+            success: false,
+            message: "Current password is incorrect"
+        });
+  }
+
+  user.password = newPassword
+  await user.save()
+
+  return res.status(200).json({
+        success: true,
+        message: "Password changed successfully"
+    });
+  
+})
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  getCurrentUser,
+  updateProfile,
+  changePassword
+};
