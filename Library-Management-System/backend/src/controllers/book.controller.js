@@ -3,18 +3,16 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 const getAllBooks = asyncHandler(async (req, res) => {
 
-    // ── 1. Extract query params (with safe defaults) ──────────────────
     const {
         search,
         category,
         language,
-        page  = 1,        // default: first page
-        limit = 10,       // default: 10 books per page
+        page  = 1,        
+        limit = 10,      
         sortBy = 'createdAt',
         order  = 'desc'
     } = req.query;
 
-    // ── 2. Build the filter object ────────────────────────────────────
     const query = { isActive: true };  // always exclude soft-deleted books
 
     // SEARCH — partial, case-insensitive match on title
@@ -28,34 +26,26 @@ const getAllBooks = asyncHandler(async (req, res) => {
     if (category) query.category = category;
     if (language) query.language = language;
 
-    // ── 3. Pagination math ────────────────────────────────────────────
     const pageNum  = Math.max(1, parseInt(page));   // ensure page >= 1
     const limitNum = Math.min(50, Math.max(1, parseInt(limit))); // clamp: 1–50
     const skip     = (pageNum - 1) * limitNum;
-    // page=1 → skip 0  (show books 1–10)
-    // page=2 → skip 10 (show books 11–20)
-    // page=3 → skip 20 (show books 21–30)
 
-    // ── 4. Sort ───────────────────────────────────────────────────────
     const sortOrder = order === 'asc' ? 1 : -1;
     const sortObj   = { [sortBy]: sortOrder };
     // e.g. sortBy='title'&order='asc' → { title: 1 }
 
-    // ── 5. Run both queries in parallel (faster than sequential) ──────
     const [books, total] = await Promise.all([
         Book.find(query)
-            .populate('author',   'name country')    // only fetch name & country from Author
-            .populate('category', 'name')            // only fetch name from Category
+            .populate('author',   'name country')   
+            .populate('category', 'name')            
             .sort(sortObj)
             .skip(skip)
             .limit(limitNum)
             .select('-__v'),                         // hide internal mongoose field
 
         Book.countDocuments(query)  // total matching docs (ignoring pagination)
-        // needed so frontend knows: "Page 2 of 14"
     ]);
 
-    // ── 6. Send response with pagination meta ─────────────────────────
     return res.status(200).json({
         success: true,
         data: books,
