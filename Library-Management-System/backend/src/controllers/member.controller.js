@@ -106,3 +106,197 @@ const getAllMembers = asyncHandler(async (req, res) => {
         }
     });
 });
+
+const getMemberById = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid member ID"
+        });
+    }
+
+    const member = await User.findOne({ _id: id, role: 'member' })
+        .select('-password -refreshToken');
+
+    if (!member || !member.isActive) {
+        return res.status(404).json({
+            success: false,
+            message: "Member not found"
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: member
+    });
+});
+
+const updateMember = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid member ID"
+        });
+    }
+
+    const member = await User.findOne({ _id: id, role: 'member' });
+    if (!member || !member.isActive) {
+        return res.status(404).json({
+            success: false,
+            message: "Member not found"
+        });
+    }
+
+    const { name, phone, address, borrowLimit } = req.body;
+
+    const updateFields = {
+        ...(name         !== undefined && { name }),
+        ...(phone        !== undefined && { phone }),
+        ...(address      !== undefined && { address }),
+        ...(borrowLimit  !== undefined && { borrowLimit }),
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+        return res.status(400).json({
+            success: false,
+            message: "No valid fields provided to update"
+        });
+    }
+
+    const updatedMember = await User.findByIdAndUpdate(
+        id,
+        { $set: updateFields },
+        { new: true, runValidators: true }
+    ).select('-password -refreshToken');
+
+    return res.status(200).json({
+        success: true,
+        message: "Member updated successfully",
+        data: updatedMember
+    });
+});
+
+const deactivateMember = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid member ID"
+        });
+    }
+
+    const member = await User.findOne({ _id: id, role: 'member' });
+    if (!member || !member.isActive) {
+        return res.status(404).json({
+            success: false,
+            message: "Member not found"
+        });
+    }
+
+    const activeBorrows = await Transaction.countDocuments({
+        member: id,
+        returnDate: null
+    });
+
+    if (activeBorrows > 0) {
+        return res.status(400).json({
+            success: false,
+            message: `Cannot deactivate member. ${activeBorrows} ${activeBorrows === 1 ? 'book is' : 'books are'} currently issued`
+        });
+    }
+
+    // also check unpaid fines
+const pendingFines = await Fine.countDocuments({
+    member: id,
+    status: 'pending'
+});
+
+if (pendingFines > 0) {
+    return res.status(400).json({
+        success: false,
+        message: `Cannot deactivate. Member has ${pendingFines} unpaid ${pendingFines === 1 ? 'fine' : 'fines'}`
+    });
+}
+
+    await User.findByIdAndUpdate(id, { $set: { isActive: false } });
+
+    return res.status(200).json({
+        success: true,
+        message: "Member deactivated successfully"
+    });
+});
+
+const getMemberHistory = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid member ID"
+        });
+    }
+
+    const member = await User.findOne({ _id: id, role: 'member' });
+    if (!member) {
+        return res.status(404).json({
+            success: false,
+            message: "Member not found"
+        });
+    }
+
+    const {
+        status,
+        page  = 1,
+        limit = 10,
+        sortBy = 'createdAt',
+        order  = 'desc'
+    } = req.query;
+
+    const query = { member: id };
+
+    if (status) {
+        query.status = status;
+    }
+
+    const pageNum  = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    const skip     = (pageNum - 1) * limitNum;
+    const sortObj  = { [sortBy]: order === 'asc' ? 1 : -1 };
+
+    const [transactions, total] = await Promise.all([
+        Transaction.find(query)
+            .populate('book', 'title isbn coverImage')
+            .populate('issuedBy', 'name')
+            .sort(sortObj)
+            .skip(skip)
+            .limit(limitNum),
+        Transaction.countDocuments(query)
+    ]);
+
+    return res.status(200).json({
+        success: true,
+        data: transactions,
+        pagination: {
+            total,
+            page:        pageNum,
+            limit:       limitNum,
+            totalPages:  Math.ceil(total / limitNum),
+            hasNextPage: pageNum < Math.ceil(total / limitNum),
+            hasPrevPage: pageNum > 1
+        }
+    });
+});
+
+export {
+    createMember,
+    getAllMembers,
+    getMemberById,
+    updateMember,
+    deactivateMember,
+    getMemberHistory
+}
