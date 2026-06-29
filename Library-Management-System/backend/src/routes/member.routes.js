@@ -4,18 +4,20 @@ import { verifyRole } from "../middlewares/role.middleware";
 
 const memberRoute = express.Router();
 
-memberRoute.get("/members", verifyJWT, verifyRole("admin", "librarian"));
+memberRoute.get("", verifyJWT, verifyRole("admin", "librarian"));
 
-memberRoute.get("/members/:id", verifyJWT, verifyRole("admin", "librarian"));
+memberRoute.get("/:id", verifyJWT, verifyRole("admin", "librarian"));
 
-memberRoute.post("/members", verifyJWT, verifyRole("admin", "librarian"));
+memberRoute.post("", verifyJWT, verifyRole("admin", "librarian"));
 
-memberRoute.put("/members/:id  ", verifyJWT, verifyRole("admin", "librarian"));
+memberRoute.put("/:id  ", verifyJWT, verifyRole("admin", "librarian"));
 
-memberRoute.delete("/members/:id   ", verifyJWT, verifyRole("admin"));
+memberRoute.delete("/:id   ", verifyJWT, verifyRole("admin"));
 
 memberRoute.get(
-  "/members/:id/history ",
+  "/:id/history ",
   verifyJWT,
   verifyRole("admin", "librarian")
 );
+
+export default memberRoute
