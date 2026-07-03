@@ -20,11 +20,13 @@ import authRoute from "./routes/auth.routes.js";
 import bookRoute from "./routes/book.routes.js";
 import memberRoute from "./routes/member.routes.js";
 import transactionRoute from "./routes/transaction.routes.js";
+import fineRoute from "./routes/fine.routes.js";
 
 // moute routes
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/books", bookRoute);
 app.use("/api/v1/members", memberRoute);
 app.use("/api/v1/transactions", transactionRoute);
+app.use("/api/v1/fines", fineRoute);
 
 export default app;
