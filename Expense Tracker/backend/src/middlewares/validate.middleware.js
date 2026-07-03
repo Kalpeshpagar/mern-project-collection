@@ -10,6 +10,7 @@ const validate = (schema) => {
 
       return res.status(400).json({
         success: false,
+        message: errors.join(", "),
         errors
       });
     }
