@@ -23,7 +23,9 @@ const fineSchema = mongoose.Schema(
     },
     paidAt: { type: Date, default: null }, // ← explicit null = not yet paid
     paidBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    waivedReason: { type: String }
   },
+  
   { timestamps: true }
 );
 
