@@ -1,6 +1,6 @@
 import express from "express";
-import { verifyJWT } from "../middlewares/auth.middleware";
-import { verifyRole } from "../middlewares/role.middleware";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyRole } from "../middlewares/role.middleware.js";
 
 const memberRoute = express.Router();
 
