@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1",
+    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api/v1",
     withCredentials: true,   // sends cookies (accessToken) with every request
     headers: {
         "Content-Type": "application/json",
@@ -29,8 +29,19 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // if 401 and we haven't already retried this request
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Check if the request is an auth-related request where we shouldn't attempt token refresh
+        const isAuthRequest =
+            originalRequest?.url?.includes("/auth/login") ||
+            originalRequest?.url?.includes("/auth/register") ||
+            originalRequest?.url?.includes("/auth/refresh-token");
+
+        // if 401 and we haven't already retried this request and it is not an auth request
+        if (
+            error.response?.status === 401 &&
+            originalRequest &&
+            !originalRequest._retry &&
+            !isAuthRequest
+        ) {
             originalRequest._retry = true;   // flag to prevent infinite retry loop
 
             try {
@@ -48,7 +59,10 @@ axiosInstance.interceptors.response.use(
             } catch (refreshError) {
                 // refresh failed — token truly expired, force logout
                 localStorage.removeItem("accessToken");
-                window.location.href = "/login";
+                // Only redirect if we are not already on the login or register pages to avoid infinite page refreshes
+                if (window.location.pathname !== "/login" && window.location.pathname !== "/register") {
+                    window.location.href = "/login";
+                }
                 return Promise.reject(refreshError);
             }
         }
