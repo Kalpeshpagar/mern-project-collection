@@ -151,7 +151,7 @@ const authSlice = createSlice({
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.loading          = false;
-                state.user             = action.payload.user;
+                state.user             = action.payload.data;
                 state.isAuthenticated  = true;
                 toast.success("Logged in successfully!");
             })
