@@ -63,11 +63,10 @@ const bookSchema = new mongoose.Schema(
 );
 
 // availableCopies needs a pre-save hook — right now it has no default, so a newly created book would have availableCopies: undefined. On first save it should mirror totalCopies
-bookSchema.pre("save", function (next) {
+bookSchema.pre("save", function () {
   if (this.isNew) {
     this.availableCopies = this.totalCopies;
   }
-  next();
 });
 
 export const Book = mongoose.model("Book", bookSchema);
