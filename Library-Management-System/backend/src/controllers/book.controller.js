@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Book } from "../models/book.model.js";
+import { Author } from "../models/author.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 

@@ -1,3 +1,9 @@
+import mongoose from "mongoose";
+import { User } from "../models/user.model.js";
+import { Transaction } from "../models/transaction.model.js";
+import { Fine } from "../models/fine.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+
 const createMember = asyncHandler(async (req, res) => {
     const { name, email, password, phone, address } = req.body;
 

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Fine } from "../models/fine.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
