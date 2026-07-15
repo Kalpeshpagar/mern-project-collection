@@ -1,6 +1,7 @@
 import express from 'express'
 import { verifyJWT } from '../middlewares/auth.middleware.js'
 import { verifyRole } from '../middlewares/role.middleware.js'
+import { upload } from '../middlewares/upload.middleware.js'
 import { changePassword, getCurrentUser, loginUser, logoutUser, refreshAccessToken, registerUser, updateProfile } from '../controllers/auth.controller.js'
 
 const authRoute = express.Router()
@@ -11,7 +12,8 @@ const authRoute = express.Router()
  *  @access : public
  */
 
-authRoute.post('/register', registerUser)
+authRoute.post('/register', upload.fields([{ name: 'avatar', maxCount: 1 }]), registerUser)
+
 
 /**
  *  @description : User login route

@@ -1,36 +1,50 @@
 import express from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { verifyRole } from "../middlewares/role.middleware.js";
-import { get } from "mongoose";
+import {
+  getAllTransactions,
+  getTransactionById,
+  issueBook,
+  returnBook,
+  renewBook,
+  getOverdueBooks,
+  getMyBorrows
+} from "../controllers/transaction.controller.js";
 
 const transactionRoute = express.Router();
 
-transactionRoute.get("/ ", verifyJWT, verifyRole("admin", "librarian"));
+transactionRoute.get("/", verifyJWT, verifyRole("admin", "librarian"), getAllTransactions);
 
-transactionRoute.get("( /my      ", verifyJWT, verifyRole("member"));
+transactionRoute.get("/my", verifyJWT, verifyRole("member"), getMyBorrows);
+
+transactionRoute.get("/overdue", verifyJWT, verifyRole("admin", "librarian"), getOverdueBooks);
 
 transactionRoute.get(
-  "/:id       ",
+  "/:id",
   verifyJWT,
-  verifyRole("admin", "librarian")
+  verifyRole("admin", "librarian"),
+  getTransactionById
 );
 
 transactionRoute.post(
-  "/issue     ",
+  "/issue",
   verifyJWT,
-  verifyRole("admin", "librarian")
+  verifyRole("admin", "librarian"),
+  issueBook
 );
 
 transactionRoute.put(
   "/:id/return",
   verifyJWT,
-  verifyRole("admin", "librarian")
+  verifyRole("admin", "librarian"),
+  returnBook
 );
 
 transactionRoute.put(
-  "/:id/renew ",
+  "/:id/renew",
   verifyJWT,
-  verifyRole("admin", "librarian")
+  verifyRole("admin", "librarian"),
+  renewBook
 );
 
 export default transactionRoute;
